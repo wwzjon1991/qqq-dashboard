@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>QQQ Wealth Builder</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f5;--bg3:#e8e8e8;
+  --text:#1a1a1a;--text2:#555;--text3:#888;
+  --border:#e0e0e0;--border2:#ccc;
+  --blue:#185fa5;--blue-bg:#e6f1fb;--blue-dark:#0c447c;
+  --green:#3b6d11;--green-bg:#eaf3de;--green-border:#c0dd97;
+  --red:#a32d2d;--red-bg:#fcebeb;--red-border:#f7c1c1;
+  --amber:#854f0b;--amber-bg:#faeeda;--amber-border:#fac775;
+  --radius:12px;--radius-sm:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;
+    --text:#f2f2f7;--text2:#aeaeb2;--text3:#6c6c70;
+    --border:#3a3a3c;--border2:#555;
+    --blue:#4da3e8;--blue-bg:#0c2d4a;--blue-dark:#a8d4f5;
+    --green:#7db950;--green-bg:#1a2e0a;--green-border:#3b5e1a;
+    --red:#e07070;--red-bg:#3a1212;--red-border:#6b2a2a;
+    --amber:#d4a050;--amber-bg:#3a2200;--amber-border:#6b4400;
+  }
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:16px;min-height:100vh}
+
+/* ── Password screen ── */
+#pw-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.pw-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:32px 24px;width:100%;max-width:340px;text-align:center}
+.pw-logo{font-size:40px;margin-bottom:12px}
+.pw-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.pw-sub{font-size:13px;color:var(--text3);margin-bottom:24px}
+.pw-input{width:100%;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 16px;font-size:16px;background:var(--bg);color:var(--text);text-align:center;letter-spacing:3px;margin-bottom:12px;font-family:inherit}
+.pw-input:focus{outline:2px solid var(--blue);outline-offset:1px}
+.pw-btn{width:100%;background:var(--blue);color:#fff;border:none;border-radius:var(--radius-sm);padding:13px;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit}
+.pw-btn:active{opacity:.85}
+.pw-error{font-size:13px;color:var(--red);margin-top:10px;min-height:18px}
+
+/* ── Main app ── */
+#app{display:none;max-width:480px;margin:0 auto;padding:16px 14px;padding-bottom:40px}
+h1{font-size:20px;font-weight:700;margin-bottom:2px}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.metric{background:var(--bg2);border-radius:var(--radius-sm);padding:12px}
+.metric-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.metric-value{font-size:21px;font-weight:700;line-height:1.2}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:3px}
+.badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;white-space:nowrap}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-blue{background:var(--blue-bg);color:var(--blue)}
+.b-neutral{background:var(--bg2);color:var(--text3);border:1px solid var(--border)}
+.signal-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.signal-row:last-child{border-bottom:none}
+.signal-name{font-size:13px;color:var(--text2);flex:1}
+.sig-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sig-val{font-size:13px;font-weight:700}
+.info-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px}
+.info-row:last-child{border-bottom:none}
+.info-label{color:var(--text2)}
+.info-val{font-weight:600}
+.action-box{border-radius:var(--radius-sm);padding:14px;margin-bottom:12px;border:1px solid}
+.action-title{font-size:14px;font-weight:700;margin-bottom:5px}
+.action-desc{font-size:12px;line-height:1.55}
+.tranche-box{background:var(--blue-bg);border:1px solid var(--blue);border-radius:var(--radius-sm);padding:14px;margin-bottom:12px}
+.tranche-label{font-size:11px;font-weight:600;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.tranche-val{font-size:20px;font-weight:700;color:var(--blue-dark)}
+.tranche-sub{font-size:12px;color:var(--blue);margin-top:4px}
+.score-bar-bg{background:var(--bg3);border-radius:4px;height:9px;margin:10px 0 4px}
+.score-bar{height:9px;border-radius:4px;transition:width .5s}
+.ath-bar-bg{background:var(--bg3);border-radius:4px;height:10px;margin-bottom:6px}
+.ath-bar{height:10px;border-radius:4px;background:var(--blue);transition:width .5s}
+.tab-row{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;text-align:center;padding:9px 4px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--bg2);color:var(--text3);transition:all .15s}
+.tab.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.stale-bar{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--amber);display:none}
+.refresh-note{font-size:11px;color:var(--text3);text-align:center;margin-bottom:10px}
+.spinner{width:26px;height:26px;border:3px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+button{cursor:pointer;border:1px solid var(--border2);background:var(--bg2);border-radius:var(--radius-sm);padding:8px 18px;font-size:14px;color:var(--text);font-family:inherit;transition:background .15s}
+button:hover{background:var(--bg3)}
+button:active{transform:scale(.98)}
+.btn-p{background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important;font-weight:600}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-danger{color:var(--red)!important;border-color:var(--red-border)!important}
+.flex{display:flex;align-items:center;gap:8px}
+.sec-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+input,select,textarea{border:1px solid var(--border2);border-radius:var(--radius-sm);padding:10px 12px;font-size:15px;width:100%;background:var(--bg);color:var(--text);font-family:inherit;display:block;margin-top:5px}
+input:focus,select:focus{outline:2px solid var(--blue);outline-offset:1px}
+.form-label{font-size:12px;color:var(--text2);display:block;margin-bottom:0;margin-top:10px}
+.form-group{margin-bottom:10px}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.pnl-pos{color:var(--green)}
+.pnl-neg{color:var(--red)}
+.log-entry{padding:10px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.log-entry:last-child{border-bottom:none}
+.log-detail{font-size:12px;color:var(--text2);margin-top:4px}
+.empty{font-size:13px;color:var(--text3);text-align:center;padding:28px 0}
+.loading-box{text-align:center;padding:32px 0;color:var(--text2)}
+.error-box{background:var(--red-bg);border:1px solid var(--red-border);border-radius:var(--radius-sm);padding:14px;font-size:13px;color:var(--red);margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<!-- ── Password screen ── -->
+<div id="pw-screen">
+  <div class="pw-card">
+    <div class="pw-logo">📈</div>
+    <div class="pw-title">QQQ Wealth Builder</div>
+    <div class="pw-sub">Enter your password to continue</div>
+    <input class="pw-input" type="password" id="pw-input" placeholder="••••••" autocomplete="current-password">
+    <button class="pw-btn" onclick="checkPW()">Unlock</button>
+    <div class="pw-error" id="pw-error"></div>
+  </div>
+</div>
+
+<!-- ── Main app ── -->
+<div id="app">
+
+  <!-- Header -->
+  <div class="flex" style="justify-content:space-between;margin-bottom:14px">
+    <div>
+      <h1>QQQ Wealth Builder</h1>
+      <div style="font-size:11px;color:var(--text3)" id="refresh-label">—</div>
+    </div>
+    <button class="btn-p btn-sm" onclick="loadData()" id="refresh-btn">⟳ Refresh</button>
+  </div>
+
+  <!-- Stale warning -->
+  <div class="stale-bar" id="stale-bar">⚠ Last checked <span id="stale-days"></span> days ago — time for your weekly review.</div>
+
+  <!-- Data note -->
+  <div class="refresh-note" id="data-note"></div>
+
+  <!-- Tabs -->
+  <div class="tab-row">
+    <div class="tab active" onclick="switchTab('signals')">Signals</div>
+    <div class="tab" onclick="switchTab('portfolio')">Portfolio</div>
+    <div class="tab" onclick="switchTab('log')">Trade log</div>
+  </div>
+
+  <!-- ── SIGNALS TAB ── -->
+  <div class="tab-content active" id="tab-signals">
+    <div id="signals-loading" class="loading-box"><div class="spinner"></div>Fetching market data...</div>
+    <div id="signals-error" class="error-box" style="display:none"></div>
+    <div id="signals-content" style="display:none">
+
+      <!-- Score -->
+      <div class="card">
+        <div class="card-title">Signal confluence</div>
+        <div style="font-size:26px;font-weight:700;margin-bottom:4px" id="score-label">—</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:4px" id="score-desc">—</div>
+        <div class="score-bar-bg"><div class="score-bar" id="score-bar" style="width:0%"></div></div>
+        <div class="flex" style="justify-content:space-between;font-size:10px;color:var(--text3)"><span>No signal</span><span>Strong signal</span></div>
+      </div>
+
+      <!-- Action -->
+      <div class="action-box" id="action-box" style="border-color:var(--border)">
+        <div class="action-title" id="action-title">—</div>
+        <div class="action-desc" id="action-desc">—</div>
+      </div>
+
+      <!-- Tranche -->
+      <div class="tranche-box">
+        <div class="tranche-label">↺ Next tranche</div>
+        <div class="tranche-val" id="tranche-shares">—</div>
+        <div class="tranche-sub" id="tranche-usd">—</div>
+        <div class="tranche-sub" style="margin-top:6px">+ Fresh capital: ~$1,500–$2,000 → TQQQ</div>
+      </div>
+
+      <!-- Signals -->
+      <div class="card">
+        <div class="card-title">Technical signals</div>
+        <div class="signal-row">
+          <span class="signal-name">Drawdown from 52w high</span>
+          <div class="sig-right"><span class="sig-val" id="sig-dd">—</span><span class="badge" id="b-dd"></span></div>
+        </div>
+        <div class="signal-row">
+          <span class="signal-name">RSI (14-day)</span>
+          <div class="sig-right"><span class="sig-val" id="sig-rsi">—</span><span class="badge" id="b-rsi"></span></div>
+        </div>
+        <div class="signal-row">
+          <span class="signal-name">Price vs 200-day MA</span>
+          <div class="sig-right"><span class="sig-val" id="sig-ma">—</span><span class="badge" id="b-ma"></span></div>
+        </div>
+        <div class="signal-row">
+          <span class="signal-name">VIX (fear index)</span>
+          <div class="sig-right"><span class="sig-val" id="sig-vix">—</span><span class="badge" id="b-vix"></span></div>
+        </div>
+        <div class="signal-row">
+          <span class="signal-name">Recovery from 52w low</span>
+          <div class="sig-right"><span class="sig-val" id="sig-rec">—</span><span class="badge" id="b-rec"></span></div>
+        </div>
+      </div>
+
+      <!-- ATH bar -->
+      <div class="card">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Recovery to 52-week high</div>
+        <div class="ath-bar-bg"><div class="ath-bar" id="ath-bar" style="width:0%"></div></div>
+        <div class="flex" style="justify-content:space-between;font-size:11px;color:var(--text3)">
+          <span id="ath-low">—</span>
+          <span style="font-weight:700;color:var(--text)" id="ath-mid">—</span>
+          <span id="ath-high">—</span>
+        </div>
+      </div>
+
+      <!-- Market data -->
+      <div class="card">
+        <div class="card-title">Market data</div>
+        <div class="info-row"><span class="info-label">QQQ price</span><span class="info-val" id="info-qqq">—</span></div>
+        <div class="info-row"><span class="info-label">TQQQ price</span><span class="info-val" id="info-tqqq">—</span></div>
+        <div class="info-row"><span class="info-label">52-week high</span><span class="info-val" id="info-high">—</span></div>
+        <div class="info-row"><span class="info-label">52-week low</span><span class="info-val" id="info-low">—</span></div>
+        <div class="info-row"><span class="info-label">200-day MA</span><span class="info-val" id="info-ma200">—</span></div>
+        <div class="info-row"><span class="info-label">VIX</span><span class="info-val" id="info-vix">—</span></div>
+      </div>
+
+    </div><!-- end signals-content -->
+  </div><!-- end signals tab -->
+
+  <!-- ── PORTFOLIO TAB ── -->
+  <div class="tab-content" id="tab-portfolio">
+    <div class="card">
+      <div class="sec-hdr">
+        <div class="card-title" style="margin:0">Holdings</div>
+        <button class="btn-sm" onclick="openPortEdit()" id="port-edit-btn">Edit</button>
+      </div>
+      <div id="port-view">
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-label">QQQ shares</div><div class="metric-value" id="d-qqq">—</div><div class="metric-sub">avg $<span id="d-avg">—</span></div></div>
+          <div class="metric"><div class="metric-label">TQQQ shares</div><div class="metric-value" id="d-tqqq">—</div><div class="metric-sub" id="d-tqqq-avg">—</div></div>
+        </div>
+        <div class="metric-grid">
+          <div class="metric"><div class="metric-label">Total value</div><div class="metric-value" id="d-total">—</div><div class="metric-sub">QQQ + TQQQ</div></div>
+          <div class="metric"><div class="metric-label">QQQ P&L</div><div class="metric-value" id="d-pnl">—</div><div class="metric-sub" id="d-pnl-pct">—</div></div>
+        </div>
+        <div class="divider"></div>
+        <div class="info-row"><span class="info-label">Cost basis</span><span class="info-val" id="d-cost">—</span></div>
+        <div class="info-row"><span class="info-label">QQQ market value</span><span class="info-val" id="d-qval">—</span></div>
+        <div class="info-row" style="border:none"><span class="info-label">TQQQ market value</span><span class="info-val" id="d-tval">—</span></div>
+      </div>
+      <div id="port-edit" style="display:none">
+        <div class="divider"></div>
+        <label class="form-label">QQQ shares held<input type="number" id="e-qqq" step="0.001" placeholder="61"></label>
+        <label class="form-label">QQQ avg cost per share ($)<input type="number" id="e-avg" step="0.01" placeholder="483"></label>
+        <label class="form-label">TQQQ shares held<input type="number" id="e-tqqq" step="0.001" placeholder="0"></label>
+        <label class="form-label">TQQQ avg cost per share ($)<input type="number" id="e-tqqq-avg" step="0.01" placeholder="0"></label>
+        <div class="flex" style="margin-top:14px;gap:8px">
+          <button class="btn-p" onclick="savePortfolio()" style="flex:1">Save</button>
+          <button onclick="cancelPortEdit()" style="flex:1">Cancel</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Your strategy</div>
+      <div class="info-row"><span class="info-label">Goal</span><span class="info-val">Accumulate more QQQ</span></div>
+      <div class="info-row"><span class="info-label">Rotate IN trigger</span><span class="info-val">RSI ≤ 30 or DD ≥ −10%</span></div>
+      <div class="info-row"><span class="info-label">Tranche size</span><span class="info-val">12.5% QQQ + $1.5–2K fresh</span></div>
+      <div class="info-row"><span class="info-label">Rotate OUT trigger</span><span class="info-val">RSI ≥ 65 or QQQ at ATH</span></div>
+      <div class="info-row" style="border:none"><span class="info-label">Philosophy</span><span class="info-val">Perpetual QQQ holder</span></div>
+    </div>
+  </div>
+
+  <!-- ── LOG TAB ── -->
+  <div class="tab-content" id="tab-log">
+    <div class="card">
+      <div class="sec-hdr">
+        <div class="card-title" style="margin:0">Trade log</div>
+        <button class="btn-p btn-sm" onclick="showLogForm()">+ Log trade</button>
+      </div>
+      <div id="log-form" style="display:none;margin-bottom:16px;background:var(--bg2);border-radius:var(--radius-sm);padding:14px">
+        <label class="form-label">Trade type
+          <select id="l-type">
+            <option value="in">QQQ → TQQQ (rotate in)</option>
+            <option value="out">TQQQ → QQQ (rotate out)</option>
+            <option value="fresh">Fresh capital → TQQQ</option>
+            <option value="buyqqq">Buy more QQQ</option>
+          </select>
+        </label>
+        <label class="form-label">Shares<input type="number" id="l-shares" step="0.001" placeholder="e.g. 7"></label>
+        <label class="form-label">Price per share ($)<input type="number" id="l-price" step="0.01" placeholder="e.g. 480.00"></label>
+        <label class="form-label">Note (optional)<input type="text" id="l-note" placeholder="e.g. RSI at 28, deep dip"></label>
+        <div class="flex" style="margin-top:14px;gap:8px">
+          <button class="btn-p" onclick="saveLog()" style="flex:1">Save trade</button>
+          <button onclick="hideLogForm()" style="flex:1">Cancel</button>
+        </div>
+      </div>
+      <div id="log-list"></div>
+    </div>
+    <div class="card" id="log-summary" style="display:none">
+      <div class="card-title">Summary</div>
+      <div class="info-row"><span class="info-label">Tranches in</span><span class="info-val" id="sum-in">—</span></div>
+      <div class="info-row"><span class="info-label">Rotations out</span><span class="info-val" id="sum-out">—</span></div>
+      <div class="info-row" style="border:none"><span class="info-label">Fresh capital deployed</span><span class="info-val" id="sum-fresh">—</span></div>
+    </div>
+  </div>
+
+</div><!-- end app -->
+
+<script>
+// ── Password ──────────────────────────────────────────────────────────────────
+var PW = 'TQQQ';
+function checkPW() {
+  var v = document.getElementById('pw-input').value;
+  if (v === PW) {
+    document.getElementById('pw-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    init();
+  } else {
+    document.getElementById('pw-error').textContent = 'Incorrect password. Try again.';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+document.getElementById('pw-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') checkPW(); });
+
+// ── State ─────────────────────────────────────────────────────────────────────
+var S = { qqqShares:61, qqqAvg:483, tqqqShares:0, tqqqAvg:0, log:[], cache:null };
+var M = null; // market data
+
+function loadLS() { try { var r=localStorage.getItem('qqqWB3'); if(r) Object.assign(S,JSON.parse(r)); } catch(e){} }
+function saveLS() { try { localStorage.setItem('qqqWB3',JSON.stringify(S)); } catch(e){} }
+
+// ── Format ────────────────────────────────────────────────────────────────────
+function fd(n){ return n==null||isNaN(n)?'—':'$'+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fp(n,d){ d=d==null?2:d; return n==null||isNaN(n)?'—':(n>=0?'+':'')+n.toFixed(d)+'%'; }
+function fn(n,d){ d=d==null?2:d; return n==null||isNaN(n)?'—':n.toFixed(d); }
+function setText(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; }
+function setBadge(id,text,cls){ var e=document.getElementById(id); if(!e) return; e.textContent=text; e.className='badge '+cls; }
+
+// ── Yahoo Finance fetch ───────────────────────────────────────────────────────
+async function yFetch(ticker) {
+  var urls = [
+    'https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range=1y&includePrePost=false',
+    'https://query2.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range=1y&includePrePost=false'
+  ];
+  for (var i=0; i<urls.length; i++) {
+    try {
+      var r = await fetch(urls[i], {signal:AbortSignal.timeout(10000)});
+      if (!r.ok) continue;
+      var j = await r.json();
+      if (j.chart && j.chart.result && j.chart.result[0]) return j.chart.result[0];
+    } catch(e) { continue; }
+  }
+  throw new Error('Yahoo Finance unreachable for '+ticker);
+}
+
+function getCloses(result) {
+  return result.indicators.quote[0].close.filter(v => v !== null && v !== undefined);
+}
+
+function calcRSI(closes, period) {
+  period = period || 14;
+  if (closes.length < period+1) return 50;
+  var gains=0, losses=0;
+  for (var i=closes.length-period; i<closes.length; i++) {
+    var d = closes[i]-closes[i-1];
+    if (d>0) gains+=d; else losses-=d;
+  }
+  var ag=gains/period, al=losses/period;
+  if (al===0) return 100;
+  return 100-(100/(1+ag/al));
+}
+
+function calcMA(closes, n) {
+  var sl = closes.slice(-n);
+  return sl.reduce(function(a,b){return a+b;},0)/sl.length;
+}
+
+// ── Load market data ──────────────────────────────────────────────────────────
+async function loadData() {
+  document.getElementById('refresh-btn').textContent = 'Loading...';
+  document.getElementById('refresh-btn').disabled = true;
+  document.getElementById('signals-loading').style.display = 'block';
+  document.getElementById('signals-content').style.display = 'none';
+  document.getElementById('signals-error').style.display = 'none';
+  document.getElementById('data-note').textContent = '';
+
+  try {
+    var results = await Promise.all([yFetch('QQQ'), yFetch('TQQQ'), yFetch('%5EVIX')]);
+    var qc = getCloses(results[0]);
+    var tc = getCloses(results[1]);
+    var vc = getCloses(results[2]);
+
+    M = {
+      qqqPrice: qc[qc.length-1],
+      tqqqPrice: tc[tc.length-1],
+      vix: vc[vc.length-1],
+      high52: Math.max.apply(null, qc),
+      low52: Math.min.apply(null, qc),
+      ma200: calcMA(qc, Math.min(200, qc.length)),
+      rsi: calcRSI(qc, 14),
+      fetchedAt: new Date().toISOString()
+    };
+
+    S.cache = M;
+    saveLS();
+    document.getElementById('refresh-label').textContent = 'Last refreshed: '+new Date(M.fetchedAt).toLocaleString();
+
+  } catch(e) {
+    if (S.cache) {
+      M = S.cache;
+      var ago = new Date(M.fetchedAt).toLocaleDateString();
+      document.getElementById('data-note').textContent = 'Yahoo Finance unreachable — showing cached data from '+ago;
+    } else {
+      document.getElementById('signals-loading').style.display = 'none';
+      document.getElementById('signals-error').style.display = 'block';
+      document.getElementById('signals-error').innerHTML =
+        '<strong>Could not fetch data</strong><br>Check your internet connection and try again.<br><br>'+
+        '<button class="btn-p" onclick="loadData()" style="margin-top:4px">Retry</button>';
+      document.getElementById('refresh-btn').textContent = '⟳ Refresh';
+      document.getElementById('refresh-btn').disabled = false;
+      return;
+    }
+  }
+
+  document.getElementById('refresh-btn').textContent = '⟳ Refresh';
+  document.getElementById('refresh-btn').disabled = false;
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  if (!M) return;
+  document.getElementById('signals-loading').style.display = 'none';
+  document.getElementById('signals-content').style.display = 'block';
+
+  var p=M.qqqPrice, h=M.high52, l=M.low52, vix=M.vix, rsi=M.rsi, ma=M.ma200;
+
+  // Stale check
+  if (M.fetchedAt) {
+    var days = (Date.now()-new Date(M.fetchedAt))/86400000;
+    var sb = document.getElementById('stale-bar');
+    if (days>=7) { sb.style.display='block'; setText('stale-days', Math.floor(days)); }
+    else sb.style.display='none';
+    if (!document.getElementById('data-note').textContent)
+      document.getElementById('refresh-label').textContent = 'Last refreshed: '+new Date(M.fetchedAt).toLocaleString();
+  }
+
+  // Signals
+  var score=0;
+  var dd = h>0?((p-h)/h*100):0;
+  var maDiff = ma>0?((p-ma)/ma*100):null;
+  var pctToATH = h>0?(p/h*100):100;
+  var recFromLow = l>0?((p-l)/l*100):0;
+  var recToATH = h>0?((h-p)/p*100):0;
+
+  setText('sig-dd', fn(dd,1)+'%');
+  if (dd<=-20) { setBadge('b-dd','Deep dip','b-red'); score++; }
+  else if (dd<=-10) { setBadge('b-dd','Dip −10%+','b-amber'); score++; }
+  else setBadge('b-dd','Near high','b-green');
+
+  setText('sig-rsi', fn(rsi,1));
+  if (rsi<=30) { setBadge('b-rsi','Oversold','b-red'); score++; }
+  else if (rsi>=65) setBadge('b-rsi','Exit zone','b-green');
+  else if (rsi>=50) setBadge('b-rsi','Neutral+','b-neutral');
+  else setBadge('b-rsi','Neutral−','b-neutral');
+
+  setText('sig-ma', maDiff!=null?(maDiff>=0?'+':'')+fn(maDiff,1)+'%':'~est');
+  if (p<ma) { setBadge('b-ma','Below MA','b-red'); score++; }
+  else setBadge('b-ma','Above MA','b-green');
+
+  setText('sig-vix', fn(vix,1));
+  if (vix>=35) { setBadge('b-vix','Extreme fear','b-red'); score++; }
+  else if (vix>=25) setBadge('b-vix','Elevated','b-amber');
+  else setBadge('b-vix','Calm','b-green');
+
+  setText('sig-rec', '+'+fn(recFromLow,1)+'% from low');
+  if (pctToATH>=99) setBadge('b-rec','At ATH','b-green');
+  else if (recFromLow>=15) setBadge('b-rec','Recovering','b-blue');
+  else setBadge('b-rec','Early recovery','b-neutral');
+
+  // Score bar
+  var barColors=['#639922','#ba7517','#d85a30','#a32d2d'];
+  var bar=document.getElementById('score-bar');
+  bar.style.width=(score/4*100)+'%';
+  bar.style.background=barColors[Math.max(0,score-1)]||'#639922';
+  setText('score-label',score+' / 4 signals active');
+  var descs=['No action — market not in dip territory.','Watch — one signal flashing.','Consider a small tranche — 2 signals align.','Strong signal — rotate in.','High conviction — all 4 signals firing.'];
+  setText('score-desc',descs[score]);
+
+  // Action box
+  var ab=document.getElementById('action-box');
+  var atExit=rsi>=65&&pctToATH>=99;
+  if (atExit) {
+    ab.style.cssText='border-color:'+getCSSVar('--green-border')+';background:'+getCSSVar('--green-bg');
+    setText('action-title','Rotate TQQQ → QQQ');
+    setText('action-desc','RSI in exit zone and QQQ at ATH. Convert all TQQQ back to QQQ shares. Goal: more QQQ shares than you started with.');
+    document.getElementById('action-title').style.color=getCSSVar('--green');
+    document.getElementById('action-desc').style.color=getCSSVar('--green');
+  } else if (rsi>=65) {
+    ab.style.cssText='border-color:'+getCSSVar('--green-border')+';background:'+getCSSVar('--green-bg');
+    setText('action-title','RSI exit zone — watch for ATH');
+    setText('action-desc','RSI elevated. QQQ not yet at ATH. Prepare to rotate TQQQ → QQQ on further strength.');
+    document.getElementById('action-title').style.color=getCSSVar('--green');
+    document.getElementById('action-desc').style.color=getCSSVar('--green');
+  } else if (score>=3) {
+    ab.style.cssText='border-color:'+getCSSVar('--red-border')+';background:'+getCSSVar('--red-bg');
+    setText('action-title','Strong rotation signal — tranche in');
+    setText('action-desc','Sell ~12.5% of remaining QQQ → buy TQQQ. Deploy fresh $1.5–2K too. Keep tranching as QQQ falls further.');
+    document.getElementById('action-title').style.color=getCSSVar('--red');
+    document.getElementById('action-desc').style.color=getCSSVar('--red');
+  } else if (score===2) {
+    ab.style.cssText='border-color:'+getCSSVar('--amber-border')+';background:'+getCSSVar('--amber-bg');
+    setText('action-title','Watch and wait');
+    setText('action-desc','2 signals align but not high conviction. Next tranche ready when RSI hits 30 or drawdown deepens.');
+    document.getElementById('action-title').style.color=getCSSVar('--amber');
+    document.getElementById('action-desc').style.color=getCSSVar('--amber');
+  } else {
+    ab.style.cssText='border-color:var(--border);background:var(--bg2)';
+    setText('action-title','Hold — no rotation signal');
+    setText('action-desc','Market not oversold. Stay the course. Keep accumulating QQQ.');
+    document.getElementById('action-title').style.color='var(--text)';
+    document.getElementById('action-desc').style.color='var(--text2)';
+  }
+
+  // Tranche
+  var ts=Math.max(1,Math.round(S.qqqShares*0.125));
+  setText('tranche-shares',ts+' QQQ shares (12.5% of '+S.qqqShares+')');
+  setText('tranche-usd','≈ '+fd(ts*p)+' at current price');
+
+  // ATH bar
+  var barPct=h>l?Math.min(100,Math.max(0,(p-l)/(h-l)*100)):50;
+  document.getElementById('ath-bar').style.width=barPct.toFixed(1)+'%';
+  setText('ath-low','Low '+fd(l));
+  setText('ath-mid',pctToATH>=99?'At ATH':'+'+fn(recToATH,1)+'% to ATH');
+  setText('ath-high','High '+fd(h));
+
+  // Market data
+  setText('info-qqq',fd(p));
+  setText('info-tqqq',fd(M.tqqqPrice));
+  setText('info-high',fd(h));
+  setText('info-low',fd(l));
+  setText('info-ma200',fd(ma));
+  setText('info-vix',fn(vix,2));
+
+  renderPortfolio();
+  renderLog();
+}
+
+function getCSSVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+// ── Portfolio ─────────────────────────────────────────────────────────────────
+function renderPortfolio() {
+  setText('d-qqq',S.qqqShares);
+  setText('d-avg',fn(S.qqqAvg,2));
+  setText('d-tqqq',S.tqqqShares);
+  setText('d-tqqq-avg',S.tqqqAvg>0?'avg $'+fn(S.tqqqAvg,2):'not held');
+
+  if (!M) return;
+  var qv=S.qqqShares*M.qqqPrice, tv=S.tqqqShares*M.tqqqPrice;
+  var cost=S.qqqShares*S.qqqAvg, pnl=qv-cost, pnlPct=cost>0?(pnl/cost*100):0;
+  setText('d-total',fd(qv+tv));
+  var pnlEl=document.getElementById('d-pnl');
+  pnlEl.textContent=(pnl>=0?'+$':'-$')+Math.abs(pnl).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  pnlEl.className='metric-value '+(pnl>=0?'pnl-pos':'pnl-neg');
+  setText('d-pnl-pct',fp(pnlPct,1));
+  setText('d-cost',fd(cost));
+  setText('d-qval',fd(qv));
+  setText('d-tval',fd(tv));
+}
+
+function openPortEdit() {
+  document.getElementById('e-qqq').value=S.qqqShares;
+  document.getElementById('e-avg').value=S.qqqAvg;
+  document.getElementById('e-tqqq').value=S.tqqqShares;
+  document.getElementById('e-tqqq-avg').value=S.tqqqAvg||'';
+  document.getElementById('port-view').style.display='none';
+  document.getElementById('port-edit').style.display='block';
+  document.getElementById('port-edit-btn').style.display='none';
+}
+function cancelPortEdit() {
+  document.getElementById('port-view').style.display='block';
+  document.getElementById('port-edit').style.display='none';
+  document.getElementById('port-edit-btn').style.display='';
+}
+function savePortfolio() {
+  S.qqqShares=parseFloat(document.getElementById('e-qqq').value)||S.qqqShares;
+  S.qqqAvg=parseFloat(document.getElementById('e-avg').value)||S.qqqAvg;
+  S.tqqqShares=parseFloat(document.getElementById('e-tqqq').value)||0;
+  S.tqqqAvg=parseFloat(document.getElementById('e-tqqq-avg').value)||0;
+  cancelPortEdit(); saveLS(); renderPortfolio();
+}
+
+// ── Trade log ─────────────────────────────────────────────────────────────────
+function showLogForm() { document.getElementById('log-form').style.display='block'; }
+function hideLogForm() { document.getElementById('log-form').style.display='none'; }
+
+function saveLog() {
+  var shares=parseFloat(document.getElementById('l-shares').value);
+  var price=parseFloat(document.getElementById('l-price').value);
+  if (!shares||!price) { alert('Please enter shares and price.'); return; }
+  var type=document.getElementById('l-type').value;
+  var labels={in:'QQQ → TQQQ',out:'TQQQ → QQQ',fresh:'Fresh → TQQQ',buyqqq:'Buy QQQ'};
+  S.log.unshift({type,label:labels[type],shares,price,note:document.getElementById('l-note').value.trim(),date:new Date().toISOString()});
+  document.getElementById('l-shares').value='';
+  document.getElementById('l-price').value='';
+  document.getElementById('l-note').value='';
+  hideLogForm(); saveLS(); renderLog();
+}
+
+function deleteLog(i) {
+  if (!confirm('Delete this trade?')) return;
+  S.log.splice(i,1); saveLS(); renderLog();
+}
+
+function renderLog() {
+  var el=document.getElementById('log-list');
+  if (!S.log||S.log.length===0) {
+    el.innerHTML='<div class="empty">No trades logged yet.</div>';
+    document.getElementById('log-summary').style.display='none';
+    return;
+  }
+  var cm={in:'b-red',out:'b-green',fresh:'b-blue',buyqqq:'b-blue'};
+  el.innerHTML=S.log.map(function(e,i){
+    var d=new Date(e.date).toLocaleDateString('en-SG',{day:'numeric',month:'short',year:'numeric'});
+    var tot=(e.shares*e.price).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    return '<div class="log-entry">'+
+      '<div style="flex:1"><div style="margin-bottom:4px"><span class="badge '+cm[e.type]+'">'+e.label+'</span></div>'+
+      '<div class="log-detail">'+e.shares+' shares @ $'+e.price.toFixed(2)+' = $'+tot+(e.note?' · '+e.note:'')+'</div></div>'+
+      '<div style="text-align:right;flex-shrink:0"><div style="font-size:11px;color:var(--text3)">'+d+'</div>'+
+      '<button class="btn-sm btn-danger" style="margin-top:4px" onclick="deleteLog('+i+')">Delete</button></div></div>';
+  }).join('');
+
+  var countIn=S.log.filter(function(e){return e.type==='in';}).length;
+  var countOut=S.log.filter(function(e){return e.type==='out';}).length;
+  var fresh=S.log.filter(function(e){return e.type==='fresh';}).reduce(function(a,e){return a+e.shares*e.price;},0);
+  document.getElementById('log-summary').style.display='block';
+  setText('sum-in',countIn+' tranche'+(countIn!==1?'s':''));
+  setText('sum-out',countOut+' rotation'+(countOut!==1?'s':''));
+  setText('sum-fresh','$'+fresh.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}));
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function switchTab(name) {
+  var tabs=['signals','portfolio','log'];
+  document.querySelectorAll('.tab').forEach(function(t,i){ t.classList.toggle('active',tabs[i]===name); });
+  document.querySelectorAll('.tab-content').forEach(function(tc){ tc.classList.remove('active'); });
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+function init() {
+  loadLS();
+  renderPortfolio();
+  renderLog();
+  if (S.cache) {
+    M = S.cache;
+    document.getElementById('refresh-label').textContent='Cached: '+new Date(M.fetchedAt).toLocaleString();
+    render();
+  }
+  loadData();
+}
+</script>
+</body>
+</html>
