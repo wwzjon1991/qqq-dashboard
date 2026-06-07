@@ -339,19 +339,21 @@ function setBadge(id,text,cls){ var e=document.getElementById(id); if(!e) return
 
 // ── Yahoo Finance fetch ───────────────────────────────────────────────────────
 async function yFetch(ticker) {
-  var urls = [
-    'https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range=1y&includePrePost=false',
-    'https://query2.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range=1y&includePrePost=false'
+  var base = 'https://query1.finance.yahoo.com/v8/finance/chart/'+ticker+'?interval=1d&range=1y&includePrePost=false';
+  var proxies = [
+    'https://api.allorigins.win/raw?url=' + encodeURIComponent(base),
+    'https://corsproxy.io/?' + encodeURIComponent(base),
+    'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(base)
   ];
-  for (var i=0; i<urls.length; i++) {
+  for (var i=0; i<proxies.length; i++) {
     try {
-      var r = await fetch(urls[i], {signal:AbortSignal.timeout(10000)});
+      var r = await fetch(proxies[i], {signal:AbortSignal.timeout(12000)});
       if (!r.ok) continue;
       var j = await r.json();
       if (j.chart && j.chart.result && j.chart.result[0]) return j.chart.result[0];
     } catch(e) { continue; }
   }
-  throw new Error('Yahoo Finance unreachable for '+ticker);
+  throw new Error('Could not fetch data for '+ticker+'. All proxies failed.');
 }
 
 function getCloses(result) {
